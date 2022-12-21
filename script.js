@@ -48,7 +48,7 @@ window.onload = function() {
     });
 
     foodLocation();
-    setInterval(display, 290);
+    setInterval(display, 100);
 }
 
 function display() {
