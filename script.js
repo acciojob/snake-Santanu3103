@@ -1,15 +1,15 @@
 let lastRenderTime = 0;
 let gameOver = false;
-const SNAKE_SPEED = 100;
+const SNAKE_SPEED = 10;
 const gameBoard = document.getElementById('gameContainer'),
-    scoreBoard = document.getElementById('score');
+      scoreBoard = document.getElementById('score');
 const snakeBody = [{x:20,y:1,}];
 
 function main(time) {
     renderGameBoard();
-    window.requestAnimationFrame(main);
+    requestAnimationFrame(main);
       
-    const lastRenderSecond = (time - lastRenderTime) / 1000;
+    const lastRenderSecond = (time - lastRenderTime) / 100;
     if(lastRenderSecond < 1 / SNAKE_SPEED) {
 
       return
@@ -58,7 +58,7 @@ function renderGameBoard() {
           const snakeBodyElement = document.createElement("div");
           snakeBodyElement.style.gridRowStart = segment.x;
           snakeBodyElement.style.gridColumnStart = segment.y;
-          snakeBodyElement.classList.add("snakeBodyPixel");
+          snakeBodyElement.classList.add(".snakeBodyPixel");
           gameBoard.appendChild(snakeBodyElement);
         })
 }
