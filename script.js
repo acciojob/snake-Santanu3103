@@ -1,110 +1,176 @@
-// to draw board
-let blockSize = 25;
-let rows = 20;
-let cols = 20;
-let board;
-let context; 
-
-//to draw snake
-let snakeX = blockSize * 5;
-let snakeY = blockSize * 5;
-let snakeBody = [];
-
-// to set direction
-let directionX = 0;
-let directionY = 0;
-
-
-//to draw food
-let foodX;
-let foodY;
-
+let lastRenderTime = 0;
 let gameOver = false;
+const SNAKE_SPEED = 10;
+const gameBoard = document.getElementById('gameContainer'),
+    scoreBoard = document.getElementById('score');
+const snakeBody = [{x:20,y:1,}];
 
-window.onload = function() {
-    board = document.getElementById("gameContainer");
-    board.height = rows * blockSize;
-    board.width = cols * blockSize;
-    context = board.getContext("2d"); //used for drawing on the board
+function main(time) {
+    renderGameBoard();
+    requestAnimationFrame(main);
+      
+    const lastRenderSecond = (time - lastRenderTime) / 1000;
+    if(lastRenderSecond < 1 / SNAKE_SPEED) {
 
-   
-    document.addEventListener("keyup", (e)=>{
-        if (e.code == "ArrowUp" && directionY != 1) {
-            directionX = 0;
-            directionY = -1;
-        }
-        else if (e.code == "ArrowDown" && directionY != -1) {
-            directionX = 0;
-            directionY = 1;
-        }
-        else if (e.code == "ArrowLeft" && directionX != 1) {
-            directionX = -1;
-            directionY = 0;
-        }
-        else if (e.code == "ArrowRight" && directionX != -1) {
-            directionX = 1;
-            directionY = 0;
-        }
-    });
+      return
+      
+    };
 
-    foodLocation();
-    setInterval(display, 100);
-}
-
-function display() {
-    if (gameOver === true) {
-        return;
-    }
-
-    context.fillStyle="black";
-    context.fillRect(0, 0, board.width, board.height);
-
-    context.fillStyle="red";
-    context.fillRect(foodX, foodY, blockSize, blockSize);
-
-     if (foodX==snakeX && foodY==snakeY) {
-        snakeBody.push([foodX,foodY]);
-        foodLocation();
-     }
-     
-     // to move body with body
-    for (let i = snakeBody.length-1; i > 0; i--) {
-        snakeBody[i] = snakeBody[i-1];
-    }
-
-     if (snakeBody.length) {
-        snakeBody[0] = [snakeX, snakeY];
-    }
-
-    context.fillStyle="lime";
-    snakeX = snakeX + directionX*blockSize;
-    snakeY = snakeY + directionY*blockSize;
-
-    for (let i = 0; i < snakeBody.length; i++){
-     context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
-    }
-
-    context.fillRect(snakeX, snakeY, blockSize, blockSize);
-
-
-    //game over conditions
-    if (snakeX < 0 || snakeX > cols*blockSize || snakeY < 0 || snakeY > rows*blockSize) {
-        gameOver = true;
+    if(gameOver) {
         alert("Game Over");
+        scoreBoard.textContent = 0;
+        gameOver = false;
+        return ;
     }
-    for (let i = 0; i < snakeBody.length; i++) {
-        if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
-            gameOver = true;
-            alert("Game Over");
-        }
-    }
+    lastRenderTime = time;
+    gameBoard.innerHTML = '';
+    update();
+   
 
 }
 
+window.requestAnimationFrame(main);
 
+function update() {
+    moveSnake();
+    moveFood();
+    scoreBoard.textContent = getScore();
+    const snakeHead = getSnakeHead();
 
-function  foodLocation() {
+    if(snakeHead.x > 40 || snakeHead.x < 1 || snakeHead.y > 40 || snakeHead.y <1) {
+        gameOver = true;
+    }
+
+    if(isSnakeIntersected()) {
+        console.log("Intersected");
+        gameOver = true;
+    }
+}
+
+function renderGameBoard() {
+    renderSnake(gameBoard);
+    renderFood(gameBoard);
+}
+
+ function renderSnake(gameBoard) {
     
-    foodX = Math.floor(Math.random() * cols) * blockSize;
-    foodY = Math.floor(Math.random() * rows) * blockSize;
+        snakeBody.forEach(segment=> {
+          const snakeBodyElement = document.createElement("div");
+          snakeBodyElement.style.gridRowStart = segment.x;
+          snakeBodyElement.style.gridColumnStart = segment.y;
+          snakeBodyElement.classList.add("snake");
+          gameBoard.appendChild(snakeBodyElement);
+        })
+}
+
+function moveSnake () {
+   
+    for(let i = snakeBody.length-2; i >= 0; i--) {
+        snakeBody[i+1] = {...snakeBody[i]};  
+    }
+
+    const inputDirection = getInputDirection();
+    snakeBody[0].x += inputDirection.x;
+    snakeBody[0].y += inputDirection.y;
+}
+
+function onSnake(position) {
+   
+  return snakeBody.some((segment) => {
+     
+    return segment.x === position.x && segment.y === position.y;
+  });
+}
+
+function checkIntersection(position) {
+    const newSnake = [...snakeBody];
+    newSnake.shift();
+    console.log(newSnake,snakeBody);
+     return newSnake.some((segment) => {
+       return segment.x === position.x && segment.y === position.y;
+     });
+
+}
+ function expandSnake() {
+    // We will add a segment to this snake
+    snakeBody.push({...snakeBody[snakeBody.length-1]});
+}
+
+ function getSnakeHead() {
+    return snakeBody[0];
+}
+
+ function isSnakeIntersected() {
+    console.log("Snake intersection")
+    const val =  checkIntersection(snakeBody[0]);
+    console.log("SNake",val);
+}
+
+let food = {
+            x: Math.round(Math.random() * 40) +1,
+            y : Math.round(Math.random() * 40) + 1
+          };
+let score = 0;
+
+ function getScore () {
+    return score;
+}
+
+ function renderFood (gameBoard) {
+    const foodElement = document.createElement("div");
+
+    // set its position in our game board
+    foodElement.style.gridRowStart = food.x;
+    foodElement.style.gridColumnStart = food.y;
+
+    gameBoard.appendChild(foodElement);
+
+    foodElement.classList.add("food");   
+}
+
+ function moveFood () {
+    // If any part of snake body collide with this food
+
+    if(onSnake(food,false)) {
+        score ++;
+        // Expand snake by 1
+            expandSnake();
+            food = {
+                x: Math.round(Math.random() * 40) +1,
+                y : Math.round(Math.random() * 40) + 1
+            };
+        // update food position 
+    }
+}
+let inputDirection = {x:0,y:0};
+
+document.addEventListener('keydown',(event) => {
+  
+      if (event.key == "ArrowUp" && inputDirection.x !== 1 ) {
+        
+          inputDirection = { x: -1, y: 0 };
+          
+        }
+      else if(event.key == "ArrowDown" && inputDirection.x !== -1 ){
+
+        inputDirection = { x: 1, y: 0 };
+
+      }
+      else if(event.key == "ArrowLeft" && inputDirection.y !== 1 ){
+
+        inputDirection = { x: 0, y: -1 };
+        
+      }
+      else if(event.key == "ArrowRight" && inputDirection.y !== -1 ){
+
+        inputDirection = { x: 0, y: 1 };
+    
+      }
+       
+})
+
+ function getInputDirection() {
+  
+  return inputDirection;
+  
 }
