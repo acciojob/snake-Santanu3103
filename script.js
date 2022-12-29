@@ -1,13 +1,13 @@
 let lastRenderTime = 0;
 let gameOver = false;
-const SNAKE_SPEED = 10;
+const SNAKE_SPEED = 100;
 const gameBoard = document.getElementById('gameContainer'),
     scoreBoard = document.getElementById('score');
 const snakeBody = [{x:20,y:1,}];
 
 function main(time) {
     renderGameBoard();
-    requestAnimationFrame(main);
+    window.requestAnimationFrame(main);
       
     const lastRenderSecond = (time - lastRenderTime) / 1000;
     if(lastRenderSecond < 1 / SNAKE_SPEED) {
