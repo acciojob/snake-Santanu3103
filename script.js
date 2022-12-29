@@ -58,7 +58,7 @@ function renderGameBoard() {
           const snakeBodyElement = document.createElement("div");
           snakeBodyElement.style.gridRowStart = segment.x;
           snakeBodyElement.style.gridColumnStart = segment.y;
-          snakeBodyElement.classList.add("snake");
+          snakeBodyElement.classList.add("snakeBodyPixel");
           gameBoard.appendChild(snakeBodyElement);
         })
 }
